@@ -66,7 +66,7 @@ Use config --quiet for validation. Full docker compose config output includes re
 
 Enter a unique password containing at least 15 characters and no more than 72 UTF-8 bytes. It is read from stdin, hidden in an interactive terminal. Do not put it in command arguments or source files.
 
-Open the verification email, follow its link and select Complete email action. Sign in at http://localhost:8081/account with the workspace slug, email and password. If an email was delayed or expired, use resend verification on that page. Bootstrap works once, while the database has no users; later users are invited by the owner. Configure TOTP MFA and retain the one-time recovery codes before administering real users.
+Open the verification email, follow its link and select Complete email action. Sign in at http://localhost:8081/account with the workspace slug, email and password. If an email was delayed or expired, enter the workspace slug and email on that page and select Resend verification email. Open the newest link; older verification links are invalidated. Bootstrap works once, while the database has no users; later users are invited by the owner. Configure TOTP MFA and retain the one-time recovery codes before administering real users.
 
 A link to localhost works only on the machine running this local instance. For a remote server, configure its real HTTPS origin before bootstrap so email links point to that server.
 

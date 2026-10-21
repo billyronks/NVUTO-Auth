@@ -130,6 +130,10 @@ try:
  prefix='/api/v1/auth/'
  login={'tenant':'acceptance','email':'owner@example.test','password':account_password}
  request(401,prefix+'login',login)
+ request(200,prefix+'resend-verification',{'tenant':'acceptance','email':'owner@example.test'})
+ replacement_token=mailtoken()
+ request(401,prefix+'verify-email',{'token':token})
+ token=replacement_token
  request(200,prefix+'verify-email',{'token':token})
  request(401,prefix+'verify-email',{'token':token})
  request(403,prefix+'login',login,origin='https://attacker.example.test')
@@ -147,7 +151,7 @@ try:
  command(compose+['stop','-t','35','auth'])
  stopped=json.loads(output(['docker','inspect',auth]))[0]
  assert stopped['State']['ExitCode']==0,stopped['State']['ExitCode']
- evidence={'result':'passed','image_id':image,'supporting_image_ids':supporting_images,'non_root':True,'read_only':True,'cap_drop':'ALL','no_new_privileges':True,'auth_published_ports':False,'HTTPS':'Caddy, verified local CA, HSTS, origin rejection, no cookies, no-store','SMTP':'STARTTLS with verified local CA and AUTH PLAIN; actual worker delivers bootstrap verification and reset messages','lifecycle':'verify, login, me, reset, revoke, refresh, logout','SIGTERM_exit_code':0,'external_provider_or_public_DNS':False,'docker':output(['docker','version','--format','{{.Server.Version}}'])}
+ evidence={'result':'passed','image_id':image,'supporting_image_ids':supporting_images,'non_root':True,'read_only':True,'cap_drop':'ALL','no_new_privileges':True,'auth_published_ports':False,'HTTPS':'Caddy, verified local CA, HSTS, origin rejection, no cookies, no-store','SMTP':'STARTTLS with verified local CA and AUTH PLAIN; actual worker delivers bootstrap verification and reset messages','lifecycle':'resend verification, invalidate prior link, verify, login, me, reset, revoke, refresh, logout','SIGTERM_exit_code':0,'external_provider_or_public_DNS':False,'docker':output(['docker','version','--format','{{.Server.Version}}'])}
  (run/'evidence.json').write_text(json.dumps(evidence,indent=2)+'\n')
  print(json.dumps(evidence,indent=2));print('Evidence:',run)
 finally:
