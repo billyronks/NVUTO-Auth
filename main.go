@@ -61,7 +61,7 @@ func run() error {
 			return e
 		}
 		if legacy {
-			return errors.New("use a new standalone database; HR upgrade is unsupported")
+			return errors.New("use a fresh dedicated auth database; unrelated tables already exist")
 		}
 		if _, e = tx.Exec(ctx, service.Schema); e != nil {
 			return errors.New("schema migration failed")

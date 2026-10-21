@@ -1,4 +1,4 @@
--- A new standalone database is required. Never apply to the HR database.
+-- A fresh dedicated auth database is required.
 CREATE TABLE IF NOT EXISTS auth_schema(version integer PRIMARY KEY);
 CREATE TABLE IF NOT EXISTS auth_tenants (
  id uuid PRIMARY KEY, slug text NOT NULL UNIQUE CHECK(slug ~ '^[a-z0-9][a-z0-9-]{1,62}$'),

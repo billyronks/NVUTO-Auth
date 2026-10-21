@@ -2,7 +2,7 @@
 
 Run NVUTO Auth in your infrastructure, alongside your existing application. No NVUTO account, activation key or connection to auth.nvuto.com is required. You own the database, domain, email account and encryption keys. The MIT license permits copying and modifying the source with its license notice retained.
 
-This is a standalone HTTP service, not an OIDC provider or a drop-in authentication library. Keep your product's data and authorization in your product; NVUTO manages credentials and sessions. Use a fresh dedicated auth database. The old HR database/API is not supported.
+This is a standalone HTTP service, not an OIDC provider or a drop-in authentication library. Keep your product's data and authorization in your product; NVUTO manages credentials and sessions. Use a fresh dedicated auth database.
 
 ## 1. Get the source and prerequisites
 

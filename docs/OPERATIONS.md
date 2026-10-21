@@ -16,7 +16,7 @@ PostgreSQL 18 is the tested target. External DATABASE_URL connections require ss
 
 Use a new dedicated database; migrate rejects the legacy public.users table. Run nvuto-auth migrate using the migration role and RUNTIME_DATABASE_ROLE=<existing runtime role>. The role receives DML and sequence usage, with audit/schema write restrictions. Run serve as that restricted role. Migration/bootstrap do not run from HTTP routes and the server does not apply migrations automatically.
 
-Version 1 has one transactional, idempotent empty-database baseline and no supported HR upgrade. Back up before upgrades. Future versions must add forward-only migration files and explicit upgrade tests; do not edit an applied baseline in a deployed release. Restore the prior database and binary to roll back. Never apply migrations to an unrelated product database.
+Version 1 has one transactional, idempotent empty-database baseline. Back up before upgrades. Future versions must add forward-only migration files and explicit upgrade tests; do not edit an applied baseline in a deployed release. Restore the prior database and binary to roll back. Never apply migrations to an unrelated product database.
 
 The local bootstrap works only with zero existing users. It creates one owner/workspace and queues email verification. Keep bootstrap/migration access private. A pending owner can request another verification email. Losing owner access is an operator incident; there is no public administrative backdoor or owner-transfer API.
 

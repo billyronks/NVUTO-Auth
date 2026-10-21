@@ -3,7 +3,7 @@
   "info": {
     "title": "NVUTO Auth",
     "version": "0.1.0",
-    "description": "Standalone bearer-only service. No cookies, JWTs, OIDC/OAuth or HR routes. 16 KiB request maximum; documented database-coordinated rate limits. See docs/OPERATIONS.md."
+    "description": "Standalone bearer-only service. No cookies, JWTs, OIDC/OAuth. 16 KiB request maximum; documented database-coordinated rate limits. See docs/OPERATIONS.md."
   },
   "servers": [
     {

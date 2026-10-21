@@ -11,7 +11,7 @@ The repository contains the application and a tested container setup. To make it
 
 ## Configure the server
 
-Use a fresh standalone database. This release cannot be pointed at the old HR database.
+Use a fresh dedicated auth database.
 
 Copy .env.example to a private .env file on the server. Restrict access to its owner and never commit or publish it. Replace every placeholder. Generate each database password and the encryption key separately with this command (run it three times):
 

@@ -2,7 +2,7 @@
 
 ## Decision
 
-The new standalone source and API are ready for public review and integration testing. Production hosting is conditional on the deployment gates below. This is not a certified identity provider or a drop-in HR upgrade. Use a fresh database and adapt clients to the documented bearer-only API.
+The new standalone source and API are ready for public review and integration testing. Production hosting is conditional on the deployment gates below. This is not a certified identity provider. Use a fresh database and adapt clients to the documented bearer-only API.
 
 ## Completed local evidence
 
@@ -19,7 +19,7 @@ The new standalone source and API are ready for public review and integration te
 - A small local workload of 120 identity reads at concurrency eight with zero errors and p95 below the two-second development acceptance threshold. This is not a production throughput or availability claim.
 - Live govulncheck review: zero reachable findings, zero imported-package findings. One non-imported OpenPGP advisory in the x/crypto module is documented in DEPENDENCY-REVIEW.md.
 - Dedicated Gitleaks v8.24.2 scan of the clean public archive: zero findings. Initial manifest-hash false positives were resolved by an unambiguous manifest structure, without source-scanner exclusions.
-- Public-source allowlist packaging, SHA-256 manifest and included third-party license notices. The old HR extraction, private test databases, caches, real environment files and attachments are excluded.
+- Public-source allowlist packaging, SHA-256 manifest and included third-party license notices. Private test databases, caches, real environment files and attachments are excluded.
 
 Detailed test logs/environment records are retained locally under .local/acceptance-*/ and .local/production-20261021/. They contain only synthetic test accounts and are deliberately excluded from distribution. dist/SHA256SUMS identifies the exact packaged source. The workspace initially had no Git metadata; the supplied GitHub target had no refs before initial publication. Only the reviewed standalone source is included. Published source is identified by its Git commit/tag; the corresponding GitHub Actions artifacts hold the published build's image identities and scan reports. Earlier local image IDs in RELEASE-EVIDENCE.json are historical baseline evidence from before the Go module was aligned to the GitHub repository.
 

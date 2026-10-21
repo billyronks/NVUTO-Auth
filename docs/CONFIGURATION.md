@@ -34,7 +34,7 @@ Remote database URLs require sslmode=verify-full and trusted matching certificat
 | BOOTSTRAP_EMAIL | Initial owner's email; actual verification is required. |
 | BOOTSTRAP_NAME | Display name; Compose defaults to Workspace Owner. |
 
-Bootstrap settings must be filled even when Compose validates a configuration containing the tools-profile service. After initialization, editing them does not change an existing owner or workspace. There is no HTTP bootstrap endpoint. Never point this baseline at a legacy HR database.
+Bootstrap settings must be filled even when Compose validates a configuration containing the tools-profile service. After initialization, editing them does not change an existing owner or workspace. There is no HTTP bootstrap endpoint. Use a fresh dedicated auth database.
 
 ## Credentials, quoting and persistent state
 

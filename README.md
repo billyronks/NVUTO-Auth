@@ -2,13 +2,13 @@
 
 [![Validate](https://github.com/billyronks/NVUTO-Auth/actions/workflows/ci.yml/badge.svg)](https://github.com/billyronks/NVUTO-Auth/actions/workflows/ci.yml)
 
-A standalone, self-hosted authentication service for one product/workspace. MIT licensed. Go 1.27.3, PostgreSQL 18, HTTPS and a STARTTLS SMTP provider are required. Redis and the original HR backend are not required.
+A standalone, self-hosted authentication service for one product/workspace. MIT licensed. Go 1.27.3, PostgreSQL 18, HTTPS and a STARTTLS SMTP provider are required.
 
-This is the new v0.1.0 API, not a drop-in upgrade of the HR extraction. Use a fresh database. Existing HR data requires a separately reviewed migration. The preserved extraction in reference/hr-snapshot is ignored by Git and excluded from release archives and container builds; it is historical reference, not a supported service.
+Use a fresh dedicated database for your NVUTO Auth installation.
 
 Supported: optional public member registration, verified email, owner invitations with resend/revoke, password recovery, TOTP MFA and recovery codes, session listing/revocation, refresh rotation with reuse detection, current-state authorization, step-up authentication, encrypted mail outbox, and local one-time owner bootstrap.
 
-Unsupported: central OIDC/OAuth identity provider, social SSO, SMS, native SDKs, custom role administration, owner transfers, HR records, push notifications, automatic migration from the HR database, and multi-region deployment. Those old routes are absent. The built-in owner can invite and administer members; members cannot grant privileges. Public registration never creates an owner.
+Unsupported: central OIDC/OAuth identity provider, social SSO, SMS, native SDKs, custom role administration, owner transfers, push notifications, and multi-region deployment. The built-in owner can invite and administer members; members cannot grant privileges. Public registration never creates an owner.
 
 ## Self-host it in your infrastructure
 

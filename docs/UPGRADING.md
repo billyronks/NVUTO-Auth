@@ -1,6 +1,6 @@
 # Upgrades, backups and rollback
 
-Keep your auth instance under your own infrastructure and release process. No hosted NVUTO sign-in is involved. The v0.1.0 baseline supports a fresh standalone database and repeat execution of that same baseline. It does not provide an HR migration, a PostgreSQL major upgrade or an arbitrary migration path from future releases. A later release must document its supported predecessor and forward-only migration steps before you use it.
+Keep your auth instance under your own infrastructure and release process. No hosted NVUTO sign-in is involved. The v0.1.0 baseline supports a fresh standalone database and repeat execution of that same baseline. It does not provide a PostgreSQL major upgrade or an arbitrary migration path from future releases. A later release must document its supported predecessor and forward-only migration steps before you use it.
 
 The commands below are for a Linux shell, the bundled production stack and the project name nvuto-auth used by the quickstart. Substitute your EXISTING project name, environment-file location and Compose files. Do not change project names or regenerate .env while upgrading: that can select an empty volume or lose decryption/password access. An installation with its own proxy omits compose.production.yaml and edge.
 
