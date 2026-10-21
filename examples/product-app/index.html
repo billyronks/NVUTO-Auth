@@ -1,0 +1,8 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Existing product + NVUTO Auth</title><script src="/app.js" defer></script></head>
+<body><noscript>Enable JavaScript to use this example. Form submissions without JavaScript cannot complete authentication.</noscript><main><h1>Your product</h1><p>This app uses your own NVUTO Auth server. Credentials stay in this tab's memory; reloading signs you out of this example.</p>
+<form id="login" method="post" action="/api/auth/login"><h2>Sign in</h2><p><label>Workspace <input name="tenant" value="my-workspace" required></label></p><p><label>Email <input name="email" type="email" autocomplete="username" required></label></p><p><label>Password <input name="password" type="password" autocomplete="current-password" required></label></p><button>Sign in</button></form>
+<form id="mfa" method="post" action="/api/auth/mfa/verify" hidden><h2>Complete MFA</h2><p><label>Authenticator code or recovery code <input name="code" autocomplete="one-time-code" required></label></p><p><label><input name="recovery" type="checkbox"> Use a recovery code</label></p><button>Verify</button></form>
+<p><a id="account" target="_blank" rel="noopener noreferrer">Verify email, reset password or manage MFA on your auth instance</a></p>
+<div id="actions" hidden><button id="projects">Load my projects</button> <button id="refresh">Refresh session</button> <button id="logout">Sign out</button></div>
+<p id="status" role="status">Ready.</p><pre id="result"></pre></main></body></html>

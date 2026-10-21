@@ -1,0 +1,1 @@
+NVUTO Auth is distributed under the MIT license. Third-party Go dependencies retain their own licenses. See THIRD_PARTY_NOTICES.md and go.mod for the direct dependency inventory. The original NVUTO HR extraction is retained locally under reference/ and is excluded from distribution.

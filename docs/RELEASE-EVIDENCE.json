@@ -1,0 +1,152 @@
+{
+  "date": "2026-10-21",
+  "timezone": "Africa/Lagos",
+  "version": "0.1.0",
+  "scope": "new standalone API; fresh database required",
+  "git_commit": null,
+  "environment": {
+    "go": "1.27.3",
+    "goos": "windows",
+    "goarch": "386",
+    "postgresql": "18.3"
+  },
+  "checks": {
+    "unit": "passed",
+    "vet": "passed",
+    "build": "passed",
+    "api_route_contract": "24 operations matched",
+    "api_request_contract": "matched",
+    "postgresql_real_routes": "passed",
+    "reset_refresh_race": "passed",
+    "concurrent_refresh_reuse": "passed",
+    "pending_mfa_replay_and_revocation": "passed",
+    "transaction_failure_rollback": "passed",
+    "smtp_tls_synthetic_server": "passed",
+    "native_binary_migration_and_restricted_startup": "passed",
+    "encryption_rotation": "passed",
+    "backup_restore_and_restored_factor_decryption": "passed",
+    "source_archive_clean_extraction": "passed",
+    "public_archive_secret_scan": {
+      "tool": "Gitleaks 8.24.2",
+      "findings": 0
+    },
+    "dependency_scan": {
+      "tool": "govulncheck 1.1.4",
+      "reachable_findings": 0,
+      "imported_package_findings": 0,
+      "module_only_advisory": "GO-2026-5932 (unused x/crypto/openpgp; documented review)"
+    },
+    "linux_race_real_postgresql": "passed; no race reports on isolated rerun",
+    "linux_native_SIGTERM": "passed; exit 0",
+    "container_SIGTERM": "passed; exit 0",
+    "docker_compose_production_overlay": {
+      "result": "passed",
+      "image_id": "sha256:0e1a9fd699f6597a53a6b81a51214b0b3bf9d0f9235bc11ae1211eea1a3ecf99",
+      "supporting_image_ids": {
+        "https_proxy": "sha256:7cb16aaa7e03602a6bf370a771dced2a78ac615387eed24e989fc7bf2f5f55cd",
+        "database": "sha256:1797b8fae4e47112f813b69be9f1cc5e4dfbdf140c0a8ed4b487cf0d68301ad4"
+      },
+      "non_root": true,
+      "read_only": true,
+      "cap_drop": "ALL",
+      "no_new_privileges": true,
+      "auth_published_ports": false,
+      "HTTPS": "Caddy, verified local CA, HSTS, origin rejection, no cookies, no-store",
+      "SMTP": "STARTTLS with verified local CA and AUTH PLAIN; actual worker delivers bootstrap verification and reset messages",
+      "lifecycle": "verify, login, me, reset, revoke, refresh, logout",
+      "SIGTERM_exit_code": 0,
+      "external_provider_or_public_DNS": false,
+      "docker": "29.8.2"
+    },
+    "container_image_scan": {
+      "tool": "Trivy 0.76.1",
+      "ignore_file": "empty; no exemptions",
+      "ignore_unfixed": false,
+      "images": {
+        "application": {
+          "image": "nvuto-auth:acceptance",
+          "artifact_id": "sha256:0e1a9fd699f6597a53a6b81a51214b0b3bf9d0f9235bc11ae1211eea1a3ecf99",
+          "findings": [
+            {
+              "id": "GO-2026-5932",
+              "package": "golang.org/x/crypto",
+              "installed": "v0.58.0",
+              "fixed": "",
+              "severity": "UNKNOWN"
+            }
+          ],
+          "high_critical": 0
+        },
+        "database": {
+          "image": "nvuto-postgres:local",
+          "artifact_id": "sha256:1797b8fae4e47112f813b69be9f1cc5e4dfbdf140c0a8ed4b487cf0d68301ad4",
+          "findings": [],
+          "high_critical": 0
+        },
+        "https_proxy": {
+          "image": "nvuto-caddy:local",
+          "artifact_id": "sha256:7cb16aaa7e03602a6bf370a771dced2a78ac615387eed24e989fc7bf2f5f55cd",
+          "findings": [
+            {
+              "id": "GO-2026-5932",
+              "package": "golang.org/x/crypto",
+              "installed": "v0.58.0",
+              "fixed": "",
+              "severity": "UNKNOWN"
+            }
+          ],
+          "high_critical": 0
+        }
+      }
+    },
+    "HTTPS_reverse_proxy_lifecycle": "passed with real Caddy and verified local CA; HSTS, origin checks, verify/reset/revoke/refresh/logout",
+    "SMTP_AUTH_STARTTLS_worker_delivery": "passed; real worker, synthetic SMTP/recipient, verified local CA",
+    "SMTP_rejected_auth_no_STARTTLS_untrusted_certificate": "passed",
+    "public_archive_deployment_files": "required files checked by verify_package.py",
+    "self_hosting_configuration_helper": "passed: independent secrets, consistent runtime URL and refusal to overwrite",
+    "product_example_trust_boundaries": "passed with TLS upstream: workspace, revoked credentials, origin/identity header checks, redirect refusal, malformed/unavailable identity, body limits",
+    "product_example_real_auth": "passed against fresh PostgreSQL and compiled auth: login, scoped projects, TOTP enrollment, MFA/recovery, refresh rotation, logout and immediate revocation"
+  },
+  "development_workload": {
+    "requests": 120,
+    "concurrency": 8,
+    "errors": 0,
+    "p95_milliseconds": 12.4979,
+    "acceptance_threshold_milliseconds": 2000,
+    "production_capacity_claim": false
+  },
+  "not_executed": [
+    "real SMTP provider/inbox delivery",
+    "public DNS and production certificate/lifecycle on a live host",
+    "production workload and availability tests",
+    "Review of any other or deleted repository history (publication target had no refs)",
+    "production alert destinations, key custody and operator responsibilities"
+  ],
+  "artifact_identity": "See dist/SHA256SUMS and the archive SOURCE-MANIFEST.json",
+  "linux_environment": {
+    "go": "1.27.3",
+    "goos": "linux",
+    "goarch": "amd64",
+    "postgresql": "18.6",
+    "docker": "29.8.2",
+    "WSL2_kernel": "6.6.87.2",
+    "synthetic_accounts_only": true
+  },
+  "linux_race_development_workload": {
+    "requests": 120,
+    "concurrency": 8,
+    "errors": 0,
+    "p95_milliseconds": 26.556815,
+    "production_capacity_claim": false
+  },
+  "local_evidence": ".local/production-20261021; synthetic test artifacts excluded from public archive",
+  "self_hosting_example_evidence": ".local/acceptance-83e814f5e3084a89a6b59cd00d6972fa/product-example.json; backup/restore including generated MFA factor passed; real SMTP provider not used",
+  "publication": {
+    "repository": "https://github.com/billyronks/NVUTO-Auth",
+    "branch": "main",
+    "release_tag": "v0.1.0",
+    "private_vulnerability_reporting": "enabled and verified",
+    "history_scope": "Target had no refs before initial standalone-source publication; private workspace/reference data excluded",
+    "published_build_evidence": "See the GitHub Actions run and its source/image-scan artifacts for the published commit; local image IDs above are pre-publication baseline evidence"
+  }
+}

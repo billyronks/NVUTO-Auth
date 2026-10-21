@@ -1,0 +1,18 @@
+FROM golang:1.27.3-bookworm@sha256:21ade014faf952365b9ecbd8dbdb87176fbacb82fac9fb132d9f2a7b8cc3f132 AS build
+WORKDIR /src
+COPY deploy/caddy/go.mod deploy/caddy/go.sum ./
+RUN go mod download
+COPY deploy/caddy/main.go ./
+RUN GOMAXPROCS=2 CGO_ENABLED=0 go build -p 2 -trimpath -ldflags="-s -w" -o /out/caddy . && mkdir -p /out/data /out/config
+FROM scratch
+COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+COPY --from=build /out/caddy /caddy
+COPY third_party /licenses/third_party
+COPY THIRD_PARTY_NOTICES.md /licenses/THIRD_PARTY_NOTICES.md
+COPY --from=build --chown=65532:65532 /out/data /data
+COPY --from=build --chown=65532:65532 /out/config /config
+USER 65532:65532
+ENV XDG_DATA_HOME=/data XDG_CONFIG_HOME=/config
+EXPOSE 80 443
+ENTRYPOINT ["/caddy"]
+CMD ["run", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"]

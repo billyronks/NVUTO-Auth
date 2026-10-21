@@ -1,0 +1,57 @@
+name: Validate
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install PostgreSQL 18
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-common
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          sudo apt-get install -y postgresql-18
+      - run: python scripts/check.py
+      - run: git diff --exit-code
+      - name: Real PostgreSQL acceptance and restore
+        env:
+          PG_BIN: /usr/lib/postgresql/18/bin
+          AUTH_TEST_RACE: '1'
+        run: python scripts/integration.py
+      - name: Race detector
+        run: go test -race ./...
+      - name: Dependency vulnerability check
+        run: go run golang.org/x/vuln/cmd/govulncheck@v1.1.4 ./...
+      - name: Build container
+        run: python scripts/container_check.py
+      - name: Install tested image scanner
+        uses: aquasecurity/setup-trivy@81e514348e19b6112ce2a7e3ecbafe19c1e1f567 # v0.3.1
+        with:
+          version: v0.76.1
+      - name: Scan application, database and HTTPS proxy images
+        run: python scripts/image_scan.py
+      - name: Archive clean source
+        run: python scripts/package.py
+      - name: Scan public source for secrets
+        run: python scripts/secret_scan.py
+      - name: Verify clean extracted source
+        run: python scripts/verify_package.py
+
+      - name: Upload verified source and image reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: nvuto-auth-validated-source
+          path: |
+            dist/nvuto-auth-0.1.0-source.zip
+            dist/SHA256SUMS
+            .local/image-scan-*/summary.json
+          if-no-files-found: error
+          include-hidden-files: true

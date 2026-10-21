@@ -1,0 +1,50 @@
+# Docker Compose v2.24.4+ is required for !override.
+services:
+  auth:
+    ports: !override []
+    environment:
+      PUBLIC_URL: https://${AUTH_DOMAIN:?Set the website hostname, without https://}
+      TRUSTED_PROXIES: 172.30.83.2/32
+    networks:
+      default:
+      edge:
+        ipv4_address: 172.30.83.3
+  migrate:
+    environment:
+      PUBLIC_URL: https://${AUTH_DOMAIN:?Required}
+  bootstrap:
+    environment:
+      PUBLIC_URL: https://${AUTH_DOMAIN:?Required}
+  edge:
+    image: nvuto-caddy:local
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.caddy
+    restart: unless-stopped
+    environment:
+      AUTH_DOMAIN: ${AUTH_DOMAIN:?Required}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - edge-data:/data
+      - edge-config:/config
+    read_only: true
+    cap_drop: [ALL]
+    cap_add: [NET_BIND_SERVICE]
+    security_opt: [no-new-privileges:true]
+    depends_on:
+      auth:
+        condition: service_started
+    networks:
+      edge:
+        ipv4_address: 172.30.83.2
+networks:
+  edge:
+    ipam:
+      config:
+        - subnet: 172.30.83.0/28
+volumes:
+  edge-data:
+  edge-config:

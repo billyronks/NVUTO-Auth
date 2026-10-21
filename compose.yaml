@@ -1,0 +1,72 @@
+x-auth: &auth
+  build: .
+  environment: &environment
+    DATABASE_URL: postgres://auth_runtime:${AUTH_DATABASE_PASSWORD:?Set a random hexadecimal password}@db:5432/auth?sslmode=disable
+    PUBLIC_URL: ${PUBLIC_URL:-http://localhost:8081}
+    LISTEN_ADDR: :8081
+    AUTH_ACTIVE_KEY: ${AUTH_ACTIVE_KEY:?Required}
+    AUTH_ENCRYPTION_KEYS: ${AUTH_ENCRYPTION_KEYS:?Required}
+    REGISTRATION_MODE: ${REGISTRATION_MODE:-invite}
+    SMTP_HOST: ${SMTP_HOST:?Required}
+    SMTP_PORT: ${SMTP_PORT:-587}
+    SMTP_USER: ${SMTP_USER:-}
+    SMTP_CA_FILE: ${SMTP_CA_FILE:-}
+    SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+    MAIL_FROM: ${MAIL_FROM:?Required}
+    TRUSTED_PROXIES: ${TRUSTED_PROXIES:-}
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges:true]
+  stop_grace_period: 45s
+services:
+  db:
+    image: nvuto-postgres:local
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.postgres
+    environment:
+      POSTGRES_DB: auth
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set a different random hexadecimal password}
+      AUTH_DATABASE_PASSWORD: ${AUTH_DATABASE_PASSWORD:?Required}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - auth-db:/var/lib/postgresql/data
+      - ./deploy/init-runtime.sh:/docker-entrypoint-initdb.d/10-runtime.sh:ro
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U postgres -d auth]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+  migrate:
+    <<: *auth
+    environment:
+      <<: *environment
+      DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD:?Required}@db:5432/auth?sslmode=disable
+      RUNTIME_DATABASE_ROLE: auth_runtime
+    command: [migrate]
+    depends_on:
+      db:
+        condition: service_healthy
+  auth:
+    <<: *auth
+    ports: [127.0.0.1:8081:8081]
+    restart: unless-stopped
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+  bootstrap:
+    <<: *auth
+    command: [bootstrap]
+    stdin_open: true
+    tty: true
+    profiles: [tools]
+    environment:
+      <<: *environment
+      BOOTSTRAP_TENANT: ${BOOTSTRAP_TENANT:?Required}
+      BOOTSTRAP_EMAIL: ${BOOTSTRAP_EMAIL:?Required}
+      BOOTSTRAP_NAME: ${BOOTSTRAP_NAME:-Workspace Owner}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+volumes:
+  auth-db:

@@ -1,0 +1,12 @@
+{$AUTH_DOMAIN} {
+ tls {
+  protocols tls1.2 tls1.3
+ }
+ header {
+  Strict-Transport-Security "max-age=31536000"
+  -Server
+ }
+ reverse_proxy auth:8081 {
+  header_up X-Forwarded-For {remote_host}
+ }
+}

@@ -1,0 +1,2825 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "NVUTO Auth",
+    "version": "0.1.0",
+    "description": "Standalone bearer-only service. No cookies, JWTs, OIDC/OAuth or HR routes. 16 KiB request maximum; documented database-coordinated rate limits. See docs/OPERATIONS.md."
+  },
+  "servers": [
+    {
+      "url": "/"
+    }
+  ],
+  "paths": {
+    "/api/v1/auth/register": {
+      "post": {
+        "summary": "Register a member",
+        "operationId": "post_register",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success; emails are durably queued, not guaranteed inbox delivery.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Message"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request or password policy.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid, expired, consumed or revoked credential.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Origin, privilege, registration mode or enrollment restriction.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database, limiter or persistence unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "tenant": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9][a-z0-9-]{1,62}$"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "maxLength": 254
+                  },
+                  "password": {
+                    "type": "string",
+                    "minLength": 15,
+                    "maxLength": 72,
+                    "format": "password",
+                    "description": "At least 15 Unicode characters; at most 72 UTF-8 bytes."
+                  },
+                  "name": {
+                    "type": "string",
+                    "maxLength": 120
+                  }
+                },
+                "required": [
+                  "tenant",
+                  "email",
+                  "password"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/verify-email": {
+      "post": {
+        "summary": "Consume email verification",
+        "operationId": "post_verify_email",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success; emails are durably queued, not guaranteed inbox delivery.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Message"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request or password policy.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid, expired, consumed or revoked credential.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Origin, privilege, registration mode or enrollment restriction.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database, limiter or persistence unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string",
+                    "minLength": 43,
+                    "maxLength": 43
+                  }
+                },
+                "required": [
+                  "token"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/resend-verification": {
+      "post": {
+        "summary": "Queue another verification email",
+        "operationId": "post_resend_verification",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success; emails are durably queued, not guaranteed inbox delivery.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Message"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request or password policy.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid, expired, consumed or revoked credential.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Origin, privilege, registration mode or enrollment restriction.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database, limiter or persistence unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "tenant": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9][a-z0-9-]{1,62}$"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "maxLength": 254
+                  }
+                },
+                "required": [
+                  "tenant",
+                  "email"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "summary": "Sign in or receive an MFA challenge",
+        "operationId": "post_login",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success; emails are durably queued, not guaranteed inbox delivery.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Login"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request or password policy.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid, expired, consumed or revoked credential.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Origin, privilege, registration mode or enrollment restriction.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database, limiter or persistence unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "tenant": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9][a-z0-9-]{1,62}$"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "maxLength": 254
+                  },
+                  "password": {
+                    "type": "string",
+                    "minLength": 15,
+                    "maxLength": 72,
+                    "format": "password",
+                    "description": "At least 15 Unicode characters; at most 72 UTF-8 bytes."
+                  }
+                },
+                "required": [
+                  "tenant",
+                  "email",
+                  "password"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/mfa/verify": {
+      "post": {
+        "summary": "Consume a challenge; provide code OR recovery_code",
+        "operationId": "post_mfa_verify",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success; emails are durably queued, not guaranteed inbox delivery.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Session"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request or password policy.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid, expired, consumed or revoked credential.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Origin, privilege, registration mode or enrollment restriction.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database, limiter or persistence unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string",
+                    "minLength": 43,
+                    "maxLength": 43
+                  },
+                  "code": {
+                    "type": "string",
+                    "pattern": "^[0-9]{6}$"
+                  },
+                  "recovery_code": {
+                    "type": "string",
+                    "minLength": 43,
+                    "maxLength": 43
+                  }
+                },
+                "required": [
+                  "token"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/refresh": {
+      "post": {
+        "summary": "Rotate refresh; reuse revokes the entire session family",
+        "operationId": "post_refresh",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success; emails are durably queued, not guaranteed inbox delivery.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Session"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request or password policy.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid, expired, consumed or revoked credential.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Origin, privilege, registration mode or enrollment restriction.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database, limiter or persistence unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "refresh_token": {
+                    "type": "string",
+                    "minLength": 43,
+                    "maxLength": 43
+                  }
+                },
+                "required": [
+                  "refresh_token"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "summary": "Resolve current authorized identity",
+        "operationId": "get_me",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; emails are durably queued, not guaranteed inbox delivery.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Identity"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request or password policy.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid, expired, consumed or revoked credential.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Origin, privilege, registration mode or enrollment restriction.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database, limiter or persistence unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "summary": "Revoke using a valid bearer or its stored refresh_token",
+        "operationId": "post_logout",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success; emails are durably queued, not guaranteed inbox delivery.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Changed"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request or password policy.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid, expired, consumed or revoked credential.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Origin, privilege, registration mode or enrollment restriction.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database, limiter or persistence unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "refresh_token": {
+                    "type": "string",
+                    "minLength": 43,
+                    "maxLength": 43
+                  }
+                },
+                "required": [],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/forgot-password": {
+      "post": {
+        "summary": "Queue password recovery",
+        "operationId": "post_forgot_password",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success; emails are durably queued, not guaranteed inbox delivery.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Message"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request or password policy.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid, expired, consumed or revoked credential.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Origin, privilege, registration mode or enrollment restriction.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database, limiter or persistence unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "tenant": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9][a-z0-9-]{1,62}$"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "maxLength": 254
+                  }
+                },
+                "required": [
+                  "tenant",
+                  "email"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/reset-password": {
+      "post": {
+        "summary": "Change password and return to sign-in",
+        "operationId": "post_reset_password",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success; emails are durably queued, not guaranteed inbox delivery.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Message"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request or password policy.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid, expired, consumed or revoked credential.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Origin, privilege, registration mode or enrollment restriction.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database, limiter or persistence unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string",
+                    "minLength": 43,
+                    "maxLength": 43
+                  },
+                  "new_password": {
+                    "type": "string",
+                    "minLength": 15,
+                    "maxLength": 72,
+                    "format": "password",
+                    "description": "At least 15 Unicode characters; at most 72 UTF-8 bytes."
+                  }
+                },
+                "required": [
+                  "token",
+                  "new_password"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/step-up": {
+      "post": {
+        "summary": "Prove password and enrolled MFA",
+        "operationId": "post_step_up",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; emails are durably queued, not guaranteed inbox delivery.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Proof"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request or password policy.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid, expired, consumed or revoked credential.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Origin, privilege, registration mode or enrollment restriction.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database, limiter or persistence unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "password": {
+                    "type": "string",
+                    "minLength": 15,
+                    "maxLength": 72,
+                    "format": "password",
+                    "description": "At least 15 Unicode characters; at most 72 UTF-8 bytes."
+                  },
+                  "code": {
+                    "type": "string",
+                    "pattern": "^[0-9]{6}$"
+                  },
+                  "recovery_code": {
+                    "type": "string",
+                    "minLength": 43,
+                    "maxLength": 43
+                  }
+                },
+                "required": [
+                  "password"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/change-password": {
+      "post": {
+        "summary": "Change password with session-bound proof",
+        "operationId": "post_change_password",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; emails are durably queued, not guaranteed inbox delivery.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Message"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request or password policy.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid, expired, consumed or revoked credential.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Origin, privilege, registration mode or enrollment restriction.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database, limiter or persistence unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "proof": {
+                    "type": "string",
+                    "minLength": 43,
+                    "maxLength": 43
+                  },
+                  "new_password": {
+                    "type": "string",
+                    "minLength": 15,
+                    "maxLength": 72,
+                    "format": "password",
+                    "description": "At least 15 Unicode characters; at most 72 UTF-8 bytes."
+                  }
+                },
+                "required": [
+                  "proof",
+                  "new_password"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/mfa/setup": {
+      "post": {
+        "summary": "Start separate pending TOTP enrollment",
+        "operationId": "post_mfa_setup",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; emails are durably queued, not guaranteed inbox delivery.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Enrollment"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request or password policy.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid, expired, consumed or revoked credential.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Origin, privilege, registration mode or enrollment restriction.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database, limiter or persistence unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "proof": {
+                    "type": "string",
+                    "minLength": 43,
+                    "maxLength": 43
+                  }
+                },
+                "required": [
+                  "proof"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/mfa/confirm": {
+      "post": {
+        "summary": "Confirm enrollment and revoke prior credentials",
+        "operationId": "post_mfa_confirm",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; emails are durably queued, not guaranteed inbox delivery.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Recovery"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request or password policy.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid, expired, consumed or revoked credential.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Origin, privilege, registration mode or enrollment restriction.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database, limiter or persistence unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string",
+                    "minLength": 43,
+                    "maxLength": 43
+                  },
+                  "code": {
+                    "type": "string",
+                    "pattern": "^[0-9]{6}$"
+                  }
+                },
+                "required": [
+                  "token",
+                  "code"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/mfa/disable": {
+      "post": {
+        "summary": "Disable MFA with fresh proof",
+        "operationId": "post_mfa_disable",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; emails are durably queued, not guaranteed inbox delivery.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Message"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request or password policy.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid, expired, consumed or revoked credential.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Origin, privilege, registration mode or enrollment restriction.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database, limiter or persistence unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "proof": {
+                    "type": "string",
+                    "minLength": 43,
+                    "maxLength": 43
+                  }
+                },
+                "required": [
+                  "proof"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/sessions": {
+      "get": {
+        "summary": "List live sessions",
+        "operationId": "get_sessions",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; emails are durably queued, not guaranteed inbox delivery.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/SessionList"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request or password policy.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid, expired, consumed or revoked credential.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Origin, privilege, registration mode or enrollment restriction.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database, limiter or persistence unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/sessions/{id}": {
+      "delete": {
+        "summary": "Revoke an owned session",
+        "operationId": "delete_sessions_id",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; emails are durably queued, not guaranteed inbox delivery.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Changed"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request or password policy.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid, expired, consumed or revoked credential.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Origin, privilege, registration mode or enrollment restriction.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database, limiter or persistence unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/sessions/revoke-others": {
+      "post": {
+        "summary": "Revoke other sessions",
+        "operationId": "post_sessions_revoke_others",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; emails are durably queued, not guaranteed inbox delivery.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Changed"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request or password policy.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid, expired, consumed or revoked credential.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Origin, privilege, registration mode or enrollment restriction.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database, limiter or persistence unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/invitations": {
+      "post": {
+        "summary": "Owner invites an unprivileged member",
+        "operationId": "post_invitations",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; emails are durably queued, not guaranteed inbox delivery.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Invitation"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request or password policy.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid, expired, consumed or revoked credential.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Origin, privilege, registration mode or enrollment restriction.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database, limiter or persistence unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "maxLength": 254
+                  },
+                  "proof": {
+                    "type": "string",
+                    "minLength": 43,
+                    "maxLength": 43
+                  },
+                  "name": {
+                    "type": "string",
+                    "maxLength": 120
+                  }
+                },
+                "required": [
+                  "email",
+                  "proof"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/invitations/{id}/resend": {
+      "post": {
+        "summary": "Replace a pending invitation",
+        "operationId": "post_invitations_id_resend",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; emails are durably queued, not guaranteed inbox delivery.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Changed"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request or password policy.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid, expired, consumed or revoked credential.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Origin, privilege, registration mode or enrollment restriction.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database, limiter or persistence unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "proof": {
+                    "type": "string",
+                    "minLength": 43,
+                    "maxLength": 43
+                  }
+                },
+                "required": [
+                  "proof"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/invitations/{id}": {
+      "delete": {
+        "summary": "Revoke a pending invitation",
+        "operationId": "delete_invitations_id",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; emails are durably queued, not guaranteed inbox delivery.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Changed"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request or password policy.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid, expired, consumed or revoked credential.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Origin, privilege, registration mode or enrollment restriction.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database, limiter or persistence unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "proof": {
+                    "type": "string",
+                    "minLength": 43,
+                    "maxLength": 43
+                  }
+                },
+                "required": [
+                  "proof"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/invitations/accept": {
+      "post": {
+        "summary": "Consume invitation and set initial password",
+        "operationId": "post_invitations_accept",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success; emails are durably queued, not guaranteed inbox delivery.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Message"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request or password policy.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid, expired, consumed or revoked credential.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Origin, privilege, registration mode or enrollment restriction.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database, limiter or persistence unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string",
+                    "minLength": 43,
+                    "maxLength": 43
+                  },
+                  "new_password": {
+                    "type": "string",
+                    "minLength": 15,
+                    "maxLength": 72,
+                    "format": "password",
+                    "description": "At least 15 Unicode characters; at most 72 UTF-8 bytes."
+                  }
+                },
+                "required": [
+                  "token",
+                  "new_password"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/admin/mfa-reset": {
+      "post": {
+        "summary": "Owner resets another member factor; re-enrollment required",
+        "operationId": "post_admin_mfa_reset",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; emails are durably queued, not guaranteed inbox delivery.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Changed"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request or password policy.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid, expired, consumed or revoked credential.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Origin, privilege, registration mode or enrollment restriction.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database, limiter or persistence unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "user_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "proof": {
+                    "type": "string",
+                    "minLength": 43,
+                    "maxLength": 43
+                  }
+                },
+                "required": [
+                  "user_id",
+                  "proof"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/admin/user-state": {
+      "post": {
+        "summary": "Owner enables/disables another member",
+        "operationId": "post_admin_user_state",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; emails are durably queued, not guaranteed inbox delivery.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Changed"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request or password policy.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid, expired, consumed or revoked credential.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Origin, privilege, registration mode or enrollment restriction.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database, limiter or persistence unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "user_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "state": {
+                    "type": "string",
+                    "enum": [
+                      "active",
+                      "disabled"
+                    ]
+                  },
+                  "proof": {
+                    "type": "string",
+                    "minLength": 43,
+                    "maxLength": 43
+                  }
+                },
+                "required": [
+                  "user_id",
+                  "state",
+                  "proof"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Process liveness",
+        "responses": {
+          "200": {
+            "description": "Healthy"
+          },
+          "503": {
+            "description": "Not ready"
+          }
+        }
+      }
+    },
+    "/ready": {
+      "get": {
+        "summary": "Database/schema and sustained mail queue readiness",
+        "responses": {
+          "200": {
+            "description": "Healthy"
+          },
+          "503": {
+            "description": "Not ready"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "opaque 256-bit reference token"
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "additionalProperties": false
+      },
+      "Identity": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "maxLength": 254
+          },
+          "name": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "owner",
+              "member"
+            ]
+          },
+          "mfa_enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "tenant_id",
+          "email",
+          "name",
+          "role",
+          "mfa_enabled"
+        ],
+        "additionalProperties": false
+      },
+      "Message": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "message"
+        ],
+        "additionalProperties": false
+      },
+      "Session": {
+        "type": "object",
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "minLength": 43,
+            "maxLength": 43
+          },
+          "refresh_token": {
+            "type": "string",
+            "minLength": 43,
+            "maxLength": 43
+          },
+          "token_type": {
+            "const": "Bearer"
+          },
+          "expires_in": {
+            "type": "integer",
+            "maximum": 900
+          },
+          "session_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "mfa_enrollment_required": {
+            "type": "boolean",
+            "description": "Only step-up, MFA enrollment/confirmation and logout are permitted until enrollment finishes."
+          },
+          "user": {
+            "$ref": "#/components/schemas/Identity"
+          }
+        },
+        "required": [
+          "access_token",
+          "refresh_token",
+          "token_type",
+          "expires_in",
+          "session_id",
+          "mfa_enrollment_required",
+          "user"
+        ],
+        "additionalProperties": false
+      },
+      "Challenge": {
+        "type": "object",
+        "properties": {
+          "mfa_required": {
+            "const": true
+          },
+          "challenge": {
+            "type": "string",
+            "minLength": 43,
+            "maxLength": 43
+          },
+          "expires_in": {
+            "const": 300
+          }
+        },
+        "required": [
+          "mfa_required",
+          "challenge",
+          "expires_in"
+        ],
+        "additionalProperties": false
+      },
+      "Login": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/Session"
+          },
+          {
+            "$ref": "#/components/schemas/Challenge"
+          }
+        ]
+      },
+      "Proof": {
+        "type": "object",
+        "properties": {
+          "proof": {
+            "type": "string",
+            "minLength": 43,
+            "maxLength": 43
+          },
+          "expires_in": {
+            "const": 300
+          }
+        },
+        "required": [
+          "proof",
+          "expires_in"
+        ],
+        "additionalProperties": false
+      },
+      "Enrollment": {
+        "type": "object",
+        "properties": {
+          "secret": {
+            "type": "string"
+          },
+          "otpauth_url": {
+            "type": "string"
+          },
+          "enrollment_token": {
+            "type": "string",
+            "minLength": 43,
+            "maxLength": 43
+          },
+          "expires_in": {
+            "const": 600
+          }
+        },
+        "required": [
+          "secret",
+          "otpauth_url",
+          "enrollment_token",
+          "expires_in"
+        ],
+        "additionalProperties": false
+      },
+      "Recovery": {
+        "type": "object",
+        "properties": {
+          "recovery_codes": {
+            "type": "array",
+            "minItems": 10,
+            "maxItems": 10,
+            "items": {
+              "type": "string",
+              "minLength": 43,
+              "maxLength": 43
+            }
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "recovery_codes",
+          "message"
+        ],
+        "additionalProperties": false
+      },
+      "Invitation": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "user_id"
+        ],
+        "additionalProperties": false
+      },
+      "Changed": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "changed": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "changed"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "revoked": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "revoked"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      },
+      "SessionList": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "expires_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "current": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "id",
+            "created_at",
+            "expires_at",
+            "current"
+          ],
+          "additionalProperties": false
+        }
+      }
+    }
+  }
+}

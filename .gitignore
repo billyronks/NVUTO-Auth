@@ -1,0 +1,15 @@
+.cache/
+.env
+*.exe
+*.test
+coverage.out
+dist/
+.local/
+*.log
+reference/
+
+# Private environment variants and generated Python caches
+.env.*
+!.env.example
+__pycache__/
+*.py[cod]
