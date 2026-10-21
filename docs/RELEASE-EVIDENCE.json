@@ -31,7 +31,7 @@
       "findings": 0
     },
     "dependency_scan": {
-      "tool": "govulncheck 1.1.4",
+      "tool": "govulncheck 1.9.0",
       "reachable_findings": 0,
       "imported_package_findings": 0,
       "module_only_advisory": "GO-2026-5932 (unused x/crypto/openpgp; documented review)"

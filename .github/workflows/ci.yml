@@ -32,7 +32,7 @@ jobs:
       - name: Race detector
         run: go test -race ./...
       - name: Dependency vulnerability check
-        run: go run golang.org/x/vuln/cmd/govulncheck@v1.1.4 ./...
+        run: python scripts/vulnerability.py
       - name: Build container
         run: python scripts/container_check.py
       - name: Install tested image scanner
